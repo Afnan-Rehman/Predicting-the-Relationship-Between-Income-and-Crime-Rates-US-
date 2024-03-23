@@ -1,0 +1,281 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+For File Reading: crimedata.csv
+
+```{r}
+crimedata <- read.csv(file.choose())
+
+```
+
+For data Cleaning:
+
+```{r}
+vars<-c("state","population","householdsize","NumUnderPov","TotalPctDiv","PersPerFam","PctWorkMom","NumKindsDrugsSeiz","PctUsePubTrans","PolicAveOTWorked","LandArea","NumKidsBornNeverMar","PctLess9thGrade","PctNotHSGrad","PctBSorMore","racepctblack","racePctWhite","racePctAsian","racePctHisp","pctUrban","medFamInc","medIncome","pctWWage","PctUnemployed","MedRent","PopDens","nonViolPerPop","ViolentCrimesPerPop")
+crimedata<-crimedata[,vars]
+crimedata<-na.omit(crimedata)
+```
+
+For Model Testing:
+
+```{r}
+testmod<-lm(ViolentCrimesPerPop~.,data=crimedata)
+summary(testmod)
+
+testmod1<-lm(ViolentCrimesPerPop~.-state,data=crimedata)
+summary(testmod1)
+```
+Finds relationship between variables as per the dependent variable
+```{r}
+lm1<-lm(ViolentCrimesPerPop~1,data=crimedata)
+lmALL<-lm(ViolentCrimesPerPop~.-state,data=crimedata)
+lmSTEP<-step(lm1,scope=formula(lmALL),direction="forward",trace=0)
+
+summary(lmSTEP)
+```
+
+```{r}
+
+summary(crimedata)
+
+```
+
+```{r}
+lm1<-lm(medIncome~1,data=crimedata)
+lmALL<-lm(medIncome~.-state,data=crimedata)
+lmSTEP<-step(lm1,scope=formula(lmALL),direction="forward",trace=0)
+
+summary(lmSTEP)
+```
+
+To Install Library
+
+```{r}
+
+install.packages("ggplot2")
+```
+
+Plot a relationship between the income in each state:
+
+```{r}
+library(ggplot2)
+qplot(medIncome, state, data=crimedata, color = medIncome, size=10)
+
+```
+Plot a regression model between median income and non violent crimes
+
+
+```{r}
+library(ggplot2)
+qplot(medIncome, nonViolPerPop, data=crimedata, color = nonViolPerPop, size=16)
+
+```
+
+Plot a regression model between median income and violent crime per population:
+
+```{r}
+library(ggplot2)
+qplot(medIncome, ViolentCrimesPerPop, data=crimedata, color = ViolentCrimesPerPop , size=nonViolPerPop)
+
+
+```
+To Make the color of scattered data transparent:
+
+
+```{r}
+library(ggplot2)
+qplot(medIncome, ViolentCrimesPerPop, data=crimedata, color = ViolentCrimesPerPop , size=nonViolPerPop, alpha=0.5)
+
+```
+
+```{r}
+
+library(ggplot2)
+qplot(log(medIncome), log(ViolentCrimesPerPop), data=crimedata, color = "red" , size=16) + facet_wrap(~ ViolentCrimesPerPop )
+
+```
+
+Draws linear regression line on the model:
+
+```{r}
+qplot(log(medIncome), log(ViolentCrimesPerPop), data = crimedata, color= ViolentCrimesPerPop, size = 12) +geom_smooth(method = "lm", size = 1 )
+ViolentCrimesPerPop.lm
+
+```
+draw a scatterplot
+
+
+```{r}
+plot(log(medIncome)~ log(ViolentCrimesPerPop), data= crimedata, ylab= "violent crimes", xlab= "Median Income")
+abline(ViolentCrimesPerPop.lm$coefficients)
+```
+Anova Table:
+
+
+```{r}
+anova(ViolentCrimesPerPop.lm)
+
+```
+Statistical values calculations:
+
+
+```{r}
+summary(crimedata.lm)
+```
+
+Fitting linear regression model:
+
+```{r}
+x_range <- range(crimedata$medIncome)
+y_range <- range(crimedata$ViolentCrimesPerPop)
+Range <- c(x_range, y_range)
+crimedata.lm <- lm(ViolentCrimesPerPop ~ medIncome, data = crimedata)
+
+summary(crimedata.lm)
+
+par(pty = "s")
+plot (log(medIncome) ~ ViolentCrimesPerPop, data = crimedata,
+     xlab= "median Income",
+     ylab= "Violent Crimes Per Pop",
+     pch= 16,
+     col= rgb(67, 110, 238, alpha = 130, max = 255))
+print(Range)
+
+abline(crimedata.lm$coeff)
+
+```
+
+```{r}
+crimedata.lm <- lm(ViolentCrimesPerPop ~ medIncome, data=crimedata)
+names(crimedata.lm)
+```
+
+```{r}
+crimedata.lm
+```
+
+```{r}
+summary(crimedata.lm)
+```
+PLotting scatterplot:
+
+```{r}
+plot (medIncome ~ ViolentCrimesPerPop, data= crimedata)
+```
+Plotting linear regression line:
+
+
+```{r include = TRUE}
+crimedata.lm <- lm(log(medIncome) ~ ViolentCrimesPerPop, data= crimedata)
+plot (log(medIncome) ~ ViolentCrimesPerPop, data = crimedata, ylab = "Violent Crimes", xlab = "Median Income")
+abline(crimedata.lm$coefficients, col=("red"))
+
+
+
+```
+Removing outliers:
+
+
+```{r include = TRUE}
+plot (log(medIncome) ~ ViolentCrimesPerPop, data = crimedata, ylab = "Median Income", xlab = "Violent Crimes", subset=-1)
+abline(crimedata.lm$coefficients)
+crimedataout.lm <- lm(log(medIncome) ~ ViolentCrimesPerPop,subset = -1, data = crimedata)
+abline(crimedataout.lm$coefficients, col= "red")
+
+
+
+```
+
+Making assumptions on the model:
+
+```{r include = TRUE}
+crimedata.lm$coefficients
+summary(crimedata.lm)
+
+```
+calculating confidence interval:
+
+```{r}
+confint(crimedata.lm)
+```
+
+Ploting anova table:
+
+```{r}
+anova(crimedata.lm )
+
+
+
+```
+
+importing residual file
+
+```{r}
+ 
+sresid <- rstandard(crimedata.lm)
+
+```
+
+
+ploting  residuals:
+
+```{r}
+par(pty = "s")
+qqnorm(sresid, col= "royalblue")
+qqline(sresid)
+```
+
+ploting standardised residual against violent crimes:
+
+
+```{r}
+
+plot(sresid ~ ViolentCrimesPerPop, data = crimedata)
+abline(h = seq(-2,2), lty=2)
+abline(h=0)
+
+```
+
+```{r}
+
+plot(sresid ~ crimedata.lm$fitted, xlab="fitted values")
+abline(h = seq(-2,2), lty=2)
+abline(h=0)
+
+
+```
+verifing the model:
+
+```{r}
+plot(crimedata.lm)
+```
+calculating correlatioin:
+```{r}
+correlation <- cor(crimedata$ ViolentCrimesPerPo, crimedata$medIncome, use )
+```
+
+box plot 
+
+```{r}
+boxplot(crimedata$ViolentCrimesPerPo ~ crimedata$medIncome,
+        xlab = "ViolentCrimesPerPo",
+        ylab = "medIncome",
+        main = "Box Plot of Income by Crime Rate")
+```
+box plot of all variables:
+
+
+```{r}
+vars <- names(crimedata)[-1]
+boxplot_list <- list()
+for (var in vars) {
+  boxplot_list[[var]] <- boxplot(crimedata[[var]],
+                                 main = paste("Box Plot of", var),
+                                 xlab = var)}
+par(mfrow = c(3, 3))
+for (var in vars) {
+  boxplot_list[[var]]
+}
+```
